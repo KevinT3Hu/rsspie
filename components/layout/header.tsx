@@ -3,6 +3,7 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { SearchBar } from '@/components/shared/search-bar';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Header() {
   return (
@@ -12,6 +13,7 @@ export function Header() {
       <div className="flex-1">
         <SearchBar />
       </div>
+      <ThemeToggle />
     </header>
   );
 }

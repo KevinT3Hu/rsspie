@@ -1,22 +1,25 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, ExternalLink, Check, Circle } from 'lucide-react';
-import { useArticle, markAsRead, toggleFavorite } from '@/hooks/use-articles';
+import { useArticle, markAsRead, toggleFavorite, fetchOriginalContent } from '@/hooks/use-articles';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { SanitizedContent } from '@/components/articles/sanitized-content';
 
 export default function ArticlePage() {
   const params = useParams();
   const router = useRouter();
   const articleId = parseInt(params.id as string);
   const { article, prevId, nextId, isLoading, mutate } = useArticle(articleId);
-  
+  const [originalContent, setOriginalContent] = useState<string | null>(null);
+  const [isLoadingOriginal, setIsLoadingOriginal] = useState(false);
+
   // Auto-mark as read when article is opened
   useEffect(() => {
     if (article && !article.isRead) {
@@ -25,7 +28,24 @@ export default function ArticlePage() {
       });
     }
   }, [article?.id]);
-  
+
+  // Pre-fetch original content in background if needed
+  useEffect(() => {
+    if (article && (article.hasDangerousContent || article.hasImages) && !originalContent) {
+      setIsLoadingOriginal(true);
+      fetchOriginalContent(article.id)
+        .then(content => {
+          setOriginalContent(content);
+        })
+        .catch(error => {
+          console.error('Failed to fetch original content:', error);
+        })
+        .finally(() => {
+          setIsLoadingOriginal(false);
+        });
+    }
+  }, [article?.id]);
+
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto">
@@ -40,16 +60,16 @@ export default function ArticlePage() {
       </div>
     );
   }
-  
+
   if (!article) {
     return (
       <div className="max-w-3xl mx-auto text-center py-16">
         <h1 className="text-2xl font-bold mb-2">Article not found</h1>
-        <p className="text-muted-foreground">The article you\'re looking for doesn\'t exist.</p>
+        <p className="text-muted-foreground">The article you&apos;re looking for doesn&apos;t exist.</p>
       </div>
     );
   }
-  
+
   const handleMarkAsRead = async () => {
     try {
       await markAsRead(article.id, !article.isRead);
@@ -59,7 +79,7 @@ export default function ArticlePage() {
       toast.error('Failed to update article');
     }
   };
-  
+
   const handleToggleFavorite = async () => {
     try {
       await toggleFavorite(article.id);
@@ -69,7 +89,11 @@ export default function ArticlePage() {
       toast.error('Failed to update article');
     }
   };
-  
+
+  // Determine which content to show
+  const hasContent = article.sanitizedContent || article.content || article.summary;
+  const showSanitized = article.sanitizedContent || article.content || article.summary;
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -77,7 +101,7 @@ export default function ArticlePage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -90,7 +114,7 @@ export default function ArticlePage() {
               <Circle className="h-4 w-4" />
             )}
           </Button>
-          
+
           <Button
             variant="ghost"
             size="icon"
@@ -101,7 +125,7 @@ export default function ArticlePage() {
               article.isFavorite && 'fill-yellow-400 text-yellow-400'
             )} />
           </Button>
-          
+
           <a href={article.url} target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" size="icon">
               <ExternalLink className="h-4 w-4" />
@@ -109,11 +133,11 @@ export default function ArticlePage() {
           </a>
         </div>
       </div>
-      
+
       <article>
         <header className="mb-8">
           <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
-          
+
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {article.feed && (
               <Link href={`/feed/${article.feedId}`} className="flex items-center gap-2 hover:underline">
@@ -133,19 +157,20 @@ export default function ArticlePage() {
             )}
           </div>
         </header>
-        
-        {article.content ? (
-          <div
-            className="prose prose-neutral dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+
+        {hasContent ? (
+          <SanitizedContent
+            sanitizedContent={article.sanitizedContent || article.content || ''}
+            originalContent={originalContent}
+            hasDangerousContent={article.hasDangerousContent}
+            hasImages={article.hasImages}
+            className="article-content"
           />
-        ) : article.summary ? (
-          <p className="text-lg leading-relaxed">{article.summary}</p>
         ) : (
-          <p className="text-muted-italic">No content available.</p>
+          <p className="text-muted-foreground italic">No content available.</p>
         )}
       </article>
-      
+
       {/* Bottom Navigation */}
       <Separator className="my-8" />
       <div className="flex items-center justify-between">
@@ -167,7 +192,7 @@ export default function ArticlePage() {
             </>
           )}
         </Button>
-        
+
         <Button
           variant="ghost"
           className="gap-2"

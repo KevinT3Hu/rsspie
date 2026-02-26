@@ -12,17 +12,23 @@ interface ArticlesOptions {
   offset?: number;
 }
 
+export interface ArticleWithSanitization extends Article {
+  sanitizedContent: string;
+  hasDangerousContent: boolean;
+  hasImages: boolean;
+}
+
 export function useArticles(options: ArticlesOptions = {}) {
   const params = new URLSearchParams();
   if (options.feedId) params.append('feedId', options.feedId.toString());
   if (options.filter) params.append('filter', options.filter);
   if (options.limit) params.append('limit', options.limit.toString());
   if (options.offset) params.append('offset', options.offset.toString());
-  
+
   const url = `/api/articles?${params.toString()}`;
-  
+
   const { data, error, isLoading, mutate } = useSWR<{ articles: Article[] }>(url, fetcher);
-  
+
   return {
     articles: data?.articles || [],
     isLoading,
@@ -32,11 +38,15 @@ export function useArticles(options: ArticlesOptions = {}) {
 }
 
 export function useArticle(id: number | null) {
-  const { data, error, isLoading, mutate } = useSWR<{ article: Article; prevId: number | null; nextId: number | null }>(
+  const { data, error, isLoading, mutate } = useSWR<{
+    article: ArticleWithSanitization;
+    prevId: number | null;
+    nextId: number | null;
+  }>(
     id ? `/api/articles/${id}` : null,
     fetcher
   );
-  
+
   return {
     article: data?.article,
     prevId: data?.prevId,
@@ -47,18 +57,31 @@ export function useArticle(id: number | null) {
   };
 }
 
+// Fetch original content for the "Show Original" toggle
+export async function fetchOriginalContent(id: number): Promise<string> {
+  const response = await fetch(`/api/articles/${id}/original`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch original content');
+  }
+
+  const data = await response.json();
+  return data.originalContent;
+}
+
 export async function markAsRead(id: number, isRead: boolean): Promise<{ article: Article; unreadCount: number }> {
   const response = await fetch(`/api/articles/${id}/read`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isRead }),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to mark as read');
   }
-  
+
   return response.json();
 }
 
@@ -66,12 +89,12 @@ export async function toggleFavorite(id: number): Promise<Article> {
   const response = await fetch(`/api/articles/${id}/favorite`, {
     method: 'PUT',
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to toggle favorite');
   }
-  
+
   const data = await response.json();
   return data.article;
 }
@@ -82,12 +105,12 @@ export async function markAllAsRead(feedId?: number): Promise<{ count: number; u
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ markAllRead: true, feedId }),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to mark all as read');
   }
-  
+
   return response.json();
 }
 
@@ -95,11 +118,11 @@ export async function refreshAllFeeds(): Promise<{ total: number; successCount: 
   const response = await fetch('/api/fetch/all', {
     method: 'POST',
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to refresh feeds');
   }
-  
+
   return response.json();
 }
