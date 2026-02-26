@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addFeed } from '@/hooks/use-feeds';
+import { useLoading } from '@/hooks/use-loading';
 import { toast } from 'sonner';
 
 interface AddFeedDialogProps {
@@ -28,12 +29,14 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { startLoading, stopLoading } = useLoading();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
     
     setIsLoading(true);
+    startLoading('Adding feed...');
     try {
       await addFeed(url, category || undefined);
       toast.success('Feed added successfully');
@@ -45,6 +48,7 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
       toast.error(error instanceof Error ? error.message : 'Failed to add feed');
     } finally {
       setIsLoading(false);
+      stopLoading();
     }
   };
   

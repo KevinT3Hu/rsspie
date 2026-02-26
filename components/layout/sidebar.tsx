@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { 
   Rss, 
   Inbox, 
@@ -9,9 +9,7 @@ import {
   Clock, 
   Calendar, 
   Settings, 
-  Plus,
   RefreshCw,
-  ChevronDown,
   Folder,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,6 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sidebar as UISidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarRail } from '@/components/ui/sidebar';
 import { useFeeds } from '@/hooks/use-feeds';
 import { useArticles, refreshAllFeeds } from '@/hooks/use-articles';
+import { FeedListItem } from '@/components/feeds/feed-list-item';
+import { useLoading } from '@/hooks/use-loading';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -32,8 +32,8 @@ interface NavItem {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const params = useParams();
   const { feeds, isLoading, mutate } = useFeeds();
+  const { startLoading, stopLoading } = useLoading();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const { articles: unreadArticles } = useArticles({ filter: 'unread', limit: 1 });
@@ -48,6 +48,7 @@ export function Sidebar() {
   
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
+    startLoading('Syncing all feeds...');
     try {
       const result = await refreshAllFeeds();
       toast.success(`Refreshed ${result.successCount} of ${result.total} feeds`);
@@ -56,6 +57,7 @@ export function Sidebar() {
       toast.error('Failed to refresh feeds');
     } finally {
       setIsRefreshing(false);
+      stopLoading();
     }
   };
   
@@ -85,7 +87,7 @@ export function Sidebar() {
                   href={item.href}
                   className={cn(
                     'flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                    pathname === '/' && item.href === '/' && !params.id
+                    pathname === item.href
                       ? 'bg-accent text-accent-foreground'
                       : 'hover:bg-accent hover:text-accent-foreground'
                   )}
@@ -127,33 +129,7 @@ export function Sidebar() {
                       {category}
                     </div>
                     {categoryFeeds.map((feed) => (
-                      <Link
-                        key={feed.id}
-                        href={`/feed/${feed.id}`}
-                        className={cn(
-                          'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors ml-2',
-                          pathname === `/feed/${feed.id}`
-                            ? 'bg-accent text-accent-foreground'
-                            : 'hover:bg-accent hover:text-accent-foreground'
-                        )}
-                      >
-                        {feed.favicon ? (
-                          <img
-                            src={feed.favicon}
-                            alt=""
-                            className="h-4 w-4 rounded"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <Rss className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span className="flex-1 truncate">{feed.title}</span>
-                        {feed.unreadCount ? (
-                          <span className="text-xs text-muted-foreground">{feed.unreadCount}</span>
-                        ) : null}
-                      </Link>
+                      <FeedListItem key={feed.id} feed={feed} onUpdate={mutate} />
                     ))}
                   </div>
                 ))}

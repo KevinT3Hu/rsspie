@@ -6,6 +6,7 @@ import { ArticleCard } from './article-card';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ArticleListSkeleton } from '@/components/shared/loading-skeleton';
 import { useArticles, markAllAsRead, toggleFavorite } from '@/hooks/use-articles';
+import { useLoading } from '@/hooks/use-loading';
 import { Article, ArticleFilter } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -17,10 +18,12 @@ interface ArticleListProps {
 
 export function ArticleList({ feedId, filter }: ArticleListProps) {
   const { articles, isLoading, isError, mutate } = useArticles({ feedId, filter, limit: 50 });
+  const { startLoading, stopLoading } = useLoading();
   const [isMarkingRead, setIsMarkingRead] = useState(false);
   
   const handleMarkAllRead = async () => {
     setIsMarkingRead(true);
+    startLoading('Marking articles as read...');
     try {
       const result = await markAllAsRead(feedId);
       toast.success(`Marked ${result.count} articles as read`);
@@ -29,15 +32,19 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
       toast.error('Failed to mark articles as read');
     } finally {
       setIsMarkingRead(false);
+      stopLoading();
     }
   };
   
   const handleToggleFavorite = async (id: number) => {
+    startLoading('Updating favorite...');
     try {
       await toggleFavorite(id);
       mutate();
     } catch (error) {
       toast.error('Failed to toggle favorite');
+    } finally {
+      stopLoading();
     }
   };
   

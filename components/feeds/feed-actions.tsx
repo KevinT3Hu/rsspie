@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { MoreHorizontal, RefreshCw, Edit, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Feed } from '@/types';
 import { refreshFeed, deleteFeed } from '@/hooks/use-feeds';
+import { useLoading } from '@/hooks/use-loading';
 import { toast } from 'sonner';
 
 interface FeedActionsProps {
@@ -21,29 +23,36 @@ interface FeedActionsProps {
 
 export function FeedActions({ feed, onUpdate }: FeedActionsProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { startLoading, stopLoading } = useLoading();
+  const { mutate: globalMutate } = useSWRConfig();
   
   const handleRefresh = async () => {
     setIsRefreshing(true);
+    startLoading(`Syncing "${feed.title}"...`);
     try {
       const result = await refreshFeed(feed.id);
-      toast.success(`Added ${result.newArticles} new articles`);
+      globalMutate((key) => typeof key === 'string' && key.startsWith('/api/articles'));
       onUpdate?.();
     } catch (error) {
       toast.error('Failed to refresh feed');
     } finally {
       setIsRefreshing(false);
+      stopLoading();
     }
   };
   
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete "${feed.title}"?`)) return;
     
+    startLoading('Deleting feed...');
     try {
       await deleteFeed(feed.id);
       toast.success('Feed deleted');
       onUpdate?.();
     } catch (error) {
       toast.error('Failed to delete feed');
+    } finally {
+      stopLoading();
     }
   };
   
