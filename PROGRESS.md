@@ -35,7 +35,7 @@
 - [ ] Keyboard shortcuts
 - [ ] Search functionality
 - [x] Settings page
-- [ ] Auto-fetch scheduling
+- [x] Auto-fetch scheduling (per-feed periodic sync)
 
 ## Bugs Found & Fixed (via Playwright Testing)
 
@@ -83,6 +83,11 @@ export default function DashboardPage() {
 ### RSS Processing
 - `lib/rss/parser.ts` - RSS feed parsing
 - `lib/rss/fetcher.ts` - Feed fetching & article storage
+- `lib/rss/scheduler.ts` - Per-feed sync scheduling
+- `lib/rss/index.ts` - RSS module exports
+
+### Initialization
+- `lib/init.ts` - Application initialization (scheduler startup)
 
 ### API Routes
 - `app/api/feeds/route.ts` - List/create feeds
@@ -127,10 +132,33 @@ export default function DashboardPage() {
 - `next.config.ts` - Next.js config (standalone output)
 - `.gitignore` - Git ignore rules
 
+## Auto-Fetch Scheduling Implementation
+
+### Overview
+Each channel/feed now syncs on its own schedule based on when it was added:
+
+1. **Sync on Add**: When a feed is added, it syncs immediately and starts its periodic scheduler
+2. **Periodic Sync**: Each feed syncs at regular intervals (default: 30 minutes) based on its `created_at` time
+3. **Different Schedules**: Feeds added at different times will sync at different times, preventing all feeds from syncing simultaneously
+
+### How It Works
+- `lib/rss/scheduler.ts` - Manages per-feed sync timers using `setTimeout`
+- `lib/init.ts` - Initializes all schedulers on app startup
+- Schedulers are stopped when feeds are deleted or deactivated
+- Schedulers restart when feeds are reactivated
+- Last sync time is persisted to `last_fetched_at` in the database
+
+### Environment Variable
+```env
+FETCH_INTERVAL_MINUTES=30  # Sync interval in minutes (default: 30)
+```
+
+### API Endpoint
+- `GET /api/fetch/all` - Returns scheduler status with next sync times for all feeds
+
 ## Next Steps
 1. Implement dark mode toggle
 2. Add keyboard shortcuts for navigation
 3. Add full-text search functionality
-4. Implement auto-fetch scheduling with node-cron
-5. Add OPML import/export
-6. Add article navigation (prev/next)
+4. Add OPML import/export
+5. Add article navigation (prev/next)

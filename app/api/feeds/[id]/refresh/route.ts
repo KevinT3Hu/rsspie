@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { refreshFeed } from '@/lib/rss/fetcher';
+import { rescheduleFeedAfterSync } from '@/lib/rss/scheduler';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -25,6 +26,10 @@ export async function POST(request: NextRequest, { params }: Params) {
         { status: 500 }
       );
     }
+    
+    // Reschedule the feed after successful manual sync
+    // This resets the schedule based on the new last_fetched_at time
+    rescheduleFeedAfterSync(feedId);
     
     return NextResponse.json({ 
       success: true, 

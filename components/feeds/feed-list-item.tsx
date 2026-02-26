@@ -46,6 +46,7 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
   const [editTitle, setEditTitle] = useState(feed.title);
   const [editCategory, setEditCategory] = useState(feed.category);
   const [isSaving, setIsSaving] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -114,20 +115,25 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
           : 'hover:bg-accent hover:text-accent-foreground'
       )}
     >
-      {isRefreshing ? (
-        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-      ) : feed.favicon ? (
-        <img
-          src={feed.favicon}
-          alt=""
-          className="h-4 w-4 rounded"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-      ) : (
-        <Rss className="h-4 w-4 text-muted-foreground" />
-      )}
+      <div className="relative">
+        {isRefreshing ? (
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+        ) : feed.favicon && !faviconError ? (
+          <img
+            src={feed.favicon}
+            alt=""
+            className="h-4 w-4 rounded"
+            onError={() => {
+              setFaviconError(true);
+            }}
+          />
+        ) : (
+          <Rss className="h-4 w-4 text-muted-foreground" />
+        )}
+        {feed.unreadCount ? (
+          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+        ) : null}
+      </div>
       <span className="flex-1 truncate">{feed.title}</span>
       {feed.unreadCount ? (
         <span className="text-xs text-muted-foreground">{feed.unreadCount}</span>

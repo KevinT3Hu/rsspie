@@ -5,7 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { LoadingProvider } from "@/hooks/use-loading";
 import { GlobalLoadingBar } from "@/components/layout/global-loading-bar";
+import { initializeApp } from "@/lib/init";
 import "./globals.css";
+
+// Initialize the application on server startup
+if (typeof window === 'undefined') {
+  initializeApp();
+}
 
 const inter = Inter({ subsets: ["latin"] });
 

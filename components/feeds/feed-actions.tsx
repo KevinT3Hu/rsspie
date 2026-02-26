@@ -31,7 +31,15 @@ export function FeedActions({ feed, onUpdate }: FeedActionsProps) {
     startLoading(`Syncing "${feed.title}"...`);
     try {
       const result = await refreshFeed(feed.id);
-      globalMutate((key) => typeof key === 'string' && key.startsWith('/api/articles'));
+      // Revalidate articles and feed data (including lastFetchedAt and nextSyncAt)
+      await globalMutate(
+        (key) => typeof key === 'string' && key.startsWith('/api/articles'),
+        undefined,
+        { revalidate: true }
+      );
+      await globalMutate(`/api/feeds/${feed.id}`, undefined, { revalidate: true });
+      await globalMutate('/api/feeds', undefined, { revalidate: true });
+      toast.success(`Synced ${result.newArticles} new articles`);
       onUpdate?.();
     } catch (error) {
       toast.error('Failed to refresh feed');

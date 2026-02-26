@@ -1,6 +1,7 @@
 import { parseFeed, extractFavicon, parsePubDate, extractSummary } from './parser';
 import { getFeedById, updateFeedFetchStatus, createFeed, updateFeed } from '@/lib/db/feeds';
 import { createArticle, articleExists } from '@/lib/db/articles';
+import { startFeedScheduler } from './scheduler';
 import { Feed, RSSFeed } from '@/types';
 
 const MAX_ARTICLES_PER_FEED = parseInt(process.env.MAX_ARTICLES_PER_FEED || '100');
@@ -21,7 +22,11 @@ export async function addNewFeed(url: string, category?: string): Promise<Feed> 
     favicon: parsedFeed.image?.url || extractFavicon(parsedFeed.link || url),
   });
   
+  // Fetch articles immediately when feed is added
   await fetchArticlesForFeed(feed, parsedFeed);
+  
+  // Start the periodic scheduler for this feed
+  startFeedScheduler(feed);
   
   return feed;
 }

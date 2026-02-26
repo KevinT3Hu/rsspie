@@ -11,6 +11,7 @@ export interface Feed {
   isActive: boolean;
   createdAt: number;
   unreadCount?: number;
+  nextSyncAt?: number;  // Next scheduled sync time (in milliseconds)
 }
 
 export interface Article {

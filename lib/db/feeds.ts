@@ -1,5 +1,6 @@
 import { getDb, rowToFeed } from './index';
 import { Feed, CreateFeedInput, UpdateFeedInput } from '@/types';
+import { stopFeedScheduler, startFeedScheduler } from '@/lib/rss/scheduler';
 
 export function getAllFeeds(): Feed[] {
   const db = getDb();
@@ -38,6 +39,11 @@ export function createFeed(input: CreateFeedInput & { title: string; description
 
 export function updateFeed(id: number, input: UpdateFeedInput): Feed | null {
   const db = getDb();
+  
+  // Get current feed state to check if isActive is changing
+  const currentFeed = getFeedById(id);
+  if (!currentFeed) return null;
+  
   const fields: string[] = [];
   const values: (string | number | boolean | null)[] = [];
   
@@ -59,10 +65,26 @@ export function updateFeed(id: number, input: UpdateFeedInput): Feed | null {
   values.push(id);
   db.prepare(`UPDATE feeds SET ${fields.join(', ')} WHERE id = ?`).run(...values);
   
-  return getFeedById(id);
+  const updatedFeed = getFeedById(id);
+  
+  // Handle scheduler start/stop based on isActive change
+  if (updatedFeed && input.isActive !== undefined && input.isActive !== currentFeed.isActive) {
+    if (input.isActive) {
+      // Feed was activated, start its scheduler
+      startFeedScheduler(updatedFeed);
+    } else {
+      // Feed was deactivated, stop its scheduler
+      stopFeedScheduler(id);
+    }
+  }
+  
+  return updatedFeed;
 }
 
 export function deleteFeed(id: number): boolean {
+  // Stop the scheduler for this feed before deleting
+  stopFeedScheduler(id);
+  
   const db = getDb();
   const result = db.prepare('DELETE FROM feeds WHERE id = ?').run(id);
   return result.changes > 0;

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, ExternalLink, Check, Circle } from 'lucide-react';
@@ -14,7 +15,16 @@ export default function ArticlePage() {
   const params = useParams();
   const router = useRouter();
   const articleId = parseInt(params.id as string);
-  const { article, prevId, nextId, isLoading } = useArticle(articleId);
+  const { article, prevId, nextId, isLoading, mutate } = useArticle(articleId);
+  
+  // Auto-mark as read when article is opened
+  useEffect(() => {
+    if (article && !article.isRead) {
+      markAsRead(article.id, true).then(() => {
+        mutate();
+      });
+    }
+  }, [article?.id]);
   
   if (isLoading) {
     return (
@@ -43,6 +53,7 @@ export default function ArticlePage() {
   const handleMarkAsRead = async () => {
     try {
       await markAsRead(article.id, !article.isRead);
+      mutate();
       toast.success(article.isRead ? 'Marked as unread' : 'Marked as read');
     } catch (error) {
       toast.error('Failed to update article');
@@ -52,6 +63,7 @@ export default function ArticlePage() {
   const handleToggleFavorite = async () => {
     try {
       await toggleFavorite(article.id);
+      mutate();
       toast.success(article.isFavorite ? 'Removed from favorites' : 'Added to favorites');
     } catch (error) {
       toast.error('Failed to update article');

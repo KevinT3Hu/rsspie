@@ -32,7 +32,7 @@ export function useArticles(options: ArticlesOptions = {}) {
 }
 
 export function useArticle(id: number | null) {
-  const { data, error, isLoading } = useSWR<{ article: Article; prevId: number | null; nextId: number | null }>(
+  const { data, error, isLoading, mutate } = useSWR<{ article: Article; prevId: number | null; nextId: number | null }>(
     id ? `/api/articles/${id}` : null,
     fetcher
   );
@@ -43,6 +43,7 @@ export function useArticle(id: number | null) {
     nextId: data?.nextId,
     isLoading,
     isError: error,
+    mutate,
   };
 }
 

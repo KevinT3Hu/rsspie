@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFeedById, updateFeed, deleteFeed } from '@/lib/db/feeds';
+import { calculateNextSyncTime } from '@/lib/rss/scheduler';
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -26,7 +27,15 @@ export async function GET(request: NextRequest, { params }: Params) {
       );
     }
     
-    return NextResponse.json({ feed });
+    // Calculate next scheduled sync time
+    const nextSyncAt = calculateNextSyncTime(feed);
+    
+    return NextResponse.json({ 
+      feed: {
+        ...feed,
+        nextSyncAt,
+      }
+    });
   } catch (error) {
     console.error('Error fetching feed:', error);
     return NextResponse.json(

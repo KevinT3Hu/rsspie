@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { Inbox, Check, Star, Loader2 } from 'lucide-react';
 import { ArticleCard } from './article-card';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -19,6 +20,7 @@ interface ArticleListProps {
 export function ArticleList({ feedId, filter }: ArticleListProps) {
   const { articles, isLoading, isError, mutate } = useArticles({ feedId, filter, limit: 50 });
   const { startLoading, stopLoading } = useLoading();
+  const { mutate: globalMutate } = useSWRConfig();
   const [isMarkingRead, setIsMarkingRead] = useState(false);
   
   const handleMarkAllRead = async () => {
@@ -28,6 +30,8 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
       const result = await markAllAsRead(feedId);
       toast.success(`Marked ${result.count} articles as read`);
       mutate();
+      // Revalidate feeds to update unread counts in sidebar
+      globalMutate('/api/feeds');
     } catch (error) {
       toast.error('Failed to mark articles as read');
     } finally {

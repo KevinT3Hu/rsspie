@@ -21,7 +21,7 @@ export function ArticleCard({ article, onToggleFavorite }: ArticleCardProps) {
   };
   
   return (
-    <Link href={`/article/${article.id}`}>
+    <Link href={`/article/${article.id}`} className="block">
       <Card className={cn(
         'group cursor-pointer transition-colors hover:bg-accent',
         !article.isRead && 'bg-accent/30'
@@ -48,13 +48,16 @@ export function ArticleCard({ article, onToggleFavorite }: ArticleCardProps) {
               
               <h3 className={cn(
                 'font-medium line-clamp-2 mb-1',
-                !article.isRead && 'font-semibold'
+                !article.isRead ? 'font-semibold' : 'text-muted-foreground'
               )}>
                 {article.title}
               </h3>
               
               {article.summary && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className={cn(
+                  'text-sm line-clamp-2',
+                  article.isRead ? 'text-muted-foreground/60' : 'text-muted-foreground'
+                )}>
                   {article.summary}
                 </p>
               )}
