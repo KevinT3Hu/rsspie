@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ArticleListSkeleton } from '@/components/shared/loading-skeleton';
 import { useArticles, markAllAsRead, toggleFavorite } from '@/hooks/use-articles';
 import { useLoading } from '@/hooks/use-loading';
-import { Article, ArticleFilter } from '@/types';
+import type { ArticleFilter } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -32,7 +32,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
       mutate();
       // Revalidate feeds to update unread counts in sidebar
       globalMutate('/api/feeds');
-    } catch (error) {
+    } catch {
       toast.error('Failed to mark articles as read');
     } finally {
       setIsMarkingRead(false);
@@ -45,7 +45,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
     try {
       await toggleFavorite(id);
       mutate();
-    } catch (error) {
+    } catch {
       toast.error('Failed to toggle favorite');
     } finally {
       stopLoading();

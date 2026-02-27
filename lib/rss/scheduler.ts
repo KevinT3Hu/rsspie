@@ -1,12 +1,9 @@
 import { refreshFeed } from './fetcher';
 import { getAllFeeds, getFeedById } from '@/lib/db/feeds';
-import { Feed } from '@/types';
+import type { Feed } from '@/types';
 
 // Map to store active feed timers
 const feedTimers = new Map<number, NodeJS.Timeout>();
-
-// Default sync interval in milliseconds (30 minutes)
-const DEFAULT_SYNC_INTERVAL_MS = 30 * 60 * 1000;
 
 // Get sync interval from environment or use default
 const SYNC_INTERVAL_MS = parseInt(process.env.FETCH_INTERVAL_MINUTES || '30') * 60 * 1000;
@@ -67,7 +64,7 @@ async function syncFeed(feedId: number): Promise<void> {
   // Re-schedule the next sync
   // We re-fetch the feed to get updated last_fetched_at
   const updatedFeed = await getFeedById(feedId);
-  if (updatedFeed && updatedFeed.isActive) {
+  if (updatedFeed?.isActive) {
     scheduleFeedSync(updatedFeed);
   }
 }

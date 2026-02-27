@@ -2,7 +2,7 @@ import { parseFeed, extractFavicon, parsePubDate, extractSummary } from './parse
 import { getFeedById, updateFeedFetchStatus, createFeed, updateFeed } from '@/lib/db/feeds';
 import { createArticle, articleExists } from '@/lib/db/articles';
 import { startFeedScheduler } from './scheduler';
-import { Feed, RSSFeed } from '@/types';
+import type { Feed, RSSFeed } from '@/types';
 
 const MAX_ARTICLES_PER_FEED = parseInt(process.env.MAX_ARTICLES_PER_FEED || '100');
 

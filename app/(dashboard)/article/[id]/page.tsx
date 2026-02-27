@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, ExternalLink, Check, Circle } from 'lucide-react';
 import { useArticle, markAsRead, toggleFavorite, fetchOriginalContent } from '@/hooks/use-articles';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,6 @@ export default function ArticlePage() {
   const articleId = parseInt(params.id as string);
   const { article, prevId, nextId, isLoading, mutate } = useArticle(articleId);
   const [originalContent, setOriginalContent] = useState<string | null>(null);
-  const [isLoadingOriginal, setIsLoadingOriginal] = useState(false);
 
   // Auto-mark as read when article is opened
   useEffect(() => {
@@ -27,24 +27,20 @@ export default function ArticlePage() {
         mutate();
       });
     }
-  }, [article?.id]);
+  }, [article, mutate]);
 
   // Pre-fetch original content in background if needed
   useEffect(() => {
     if (article && (article.hasDangerousContent || article.hasImages) && !originalContent) {
-      setIsLoadingOriginal(true);
       fetchOriginalContent(article.id)
         .then(content => {
           setOriginalContent(content);
         })
-        .catch(error => {
-          console.error('Failed to fetch original content:', error);
-        })
-        .finally(() => {
-          setIsLoadingOriginal(false);
+        .catch(() => {
+          // Silently fail - user can still view sanitized content
         });
     }
-  }, [article?.id]);
+  }, [article, originalContent]);
 
   if (isLoading) {
     return (
@@ -75,7 +71,7 @@ export default function ArticlePage() {
       await markAsRead(article.id, !article.isRead);
       mutate();
       toast.success(article.isRead ? 'Marked as unread' : 'Marked as read');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update article');
     }
   };
@@ -85,14 +81,13 @@ export default function ArticlePage() {
       await toggleFavorite(article.id);
       mutate();
       toast.success(article.isFavorite ? 'Removed from favorites' : 'Added to favorites');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update article');
     }
   };
 
   // Determine which content to show
   const hasContent = article.sanitizedContent || article.content || article.summary;
-  const showSanitized = article.sanitizedContent || article.content || article.summary;
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -142,7 +137,7 @@ export default function ArticlePage() {
             {article.feed && (
               <Link href={`/feed/${article.feedId}`} className="flex items-center gap-2 hover:underline">
                 {article.feed.favicon && (
-                  <img src={article.feed.favicon} alt="" className="h-4 w-4 rounded" />
+                  <Image src={article.feed.favicon} alt="" width={16} height={16} className="h-4 w-4 rounded" />
                 )}
                 {article.feed.title}
               </Link>

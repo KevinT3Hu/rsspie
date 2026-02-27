@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { ArticleList } from '@/components/articles/article-list';
 import { useFeed } from '@/hooks/use-feeds';
 import { FeedActions } from '@/components/feeds/feed-actions';
@@ -63,7 +64,7 @@ export default function FeedPage() {
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
           {feed.favicon ? (
-            <img src={feed.favicon} alt="" className="h-8 w-8 rounded" />
+            <Image src={feed.favicon} alt="" width={32} height={32} className="h-8 w-8 rounded" />
           ) : (
             <Rss className="h-8 w-8 text-muted-foreground" />
           )}

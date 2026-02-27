@@ -1,5 +1,5 @@
 import Parser from 'rss-parser';
-import { RSSFeed, RSSItem } from '@/types';
+import type { RSSFeed } from '@/types';
 
 const parser = new Parser({
   timeout: 10000,
@@ -48,7 +48,7 @@ export function extractFavicon(url: string): string {
 export function parsePubDate(dateStr: string | undefined): number {
   if (!dateStr) return Math.floor(Date.now() / 1000);
   const date = new Date(dateStr);
-  return isNaN(date.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(date.getTime() / 1000);
+  return Number.isNaN(date.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(date.getTime() / 1000);
 }
 
 export function extractSummary(content: string | undefined | null, maxLength: number = 200): string | null {

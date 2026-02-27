@@ -1,16 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getArticleById, getPrevNextArticles } from '@/lib/db/articles';
 import { sanitizeHtml, containsDangerousContent, containsImages } from '@/lib/sanitize';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
     const articleId = parseInt(id);
 
-    if (isNaN(articleId)) {
+    if (Number.isNaN(articleId)) {
       return NextResponse.json(
         { error: 'Invalid article ID' },
         { status: 400 }
@@ -65,7 +66,7 @@ export async function GET(
 
 // Endpoint to get original content (for the "Show Original" toggle)
 export async function HEAD(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   // HEAD request to check if original content exists without returning it
@@ -73,7 +74,7 @@ export async function HEAD(
     const { id } = await params;
     const articleId = parseInt(id);
 
-    if (isNaN(articleId)) {
+    if (Number.isNaN(articleId)) {
       return NextResponse.json({}, { status: 400 });
     }
 
@@ -94,7 +95,7 @@ export async function HEAD(
         'X-Content-Length': String(originalContent.length),
       }
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({}, { status: 500 });
   }
 }

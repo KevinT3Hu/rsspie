@@ -1,5 +1,5 @@
 import { getDb, rowToFeed } from './index';
-import { Feed, CreateFeedInput, UpdateFeedInput } from '@/types';
+import type { Feed, CreateFeedInput, UpdateFeedInput } from '@/types';
 import { stopFeedScheduler, startFeedScheduler } from '@/lib/rss/scheduler';
 
 export function getAllFeeds(): Feed[] {
@@ -34,7 +34,11 @@ export function createFeed(input: CreateFeedInput & { title: string; description
     input.category || 'Uncategorized'
   );
   
-  return getFeedById(result.lastInsertRowid as number)!;
+  const feed = getFeedById(result.lastInsertRowid as number);
+  if (!feed) {
+    throw new Error('Failed to create feed');
+  }
+  return feed;
 }
 
 export function updateFeed(id: number, input: UpdateFeedInput): Feed | null {
