@@ -2,18 +2,25 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Settings, Trash2, RefreshCw, Download } from 'lucide-react';
+import { Settings, Trash2, Loader2, Download } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useFeeds } from '@/hooks/use-feeds';
+import { useCompact } from '@/components/compact-provider';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const { feeds, mutate } = useFeeds();
+  const { isCompact, setCompactMode } = useCompact();
   const [isClearing, setIsClearing] = useState(false);
   const t = useTranslations();
+  
+  const handleToggleCompact = (checked: boolean) => {
+    setCompactMode(checked ? 'compact' : 'comfortable');
+    toast.success(t(checked ? 'messages.compactModeEnabled' : 'messages.compactModeDisabled'));
+  };
   
   const handleClearOldArticles = async () => {
     setIsClearing(true);
@@ -42,8 +49,19 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="compact">{t('settings.compactView')}</Label>
-              <Switch id="compact" />
+              <div>
+                <Label htmlFor="compact" className="cursor-pointer">
+                  {t('settings.compactView')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('settings.compactViewDescription')}
+                </p>
+              </div>
+              <Switch 
+                id="compact" 
+                checked={isCompact}
+                onCheckedChange={handleToggleCompact}
+              />
             </div>
           </CardContent>
         </Card>
@@ -67,7 +85,11 @@ export default function SettingsPage() {
                 onClick={handleClearOldArticles}
                 disabled={isClearing}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                {isClearing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
                 {t('settings.clear')}
               </Button>
             </div>

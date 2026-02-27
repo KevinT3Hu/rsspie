@@ -9,8 +9,10 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ArticleListSkeleton } from '@/components/shared/loading-skeleton';
 import { useArticles, markAllAsRead, toggleFavorite } from '@/hooks/use-articles';
 import { useLoading } from '@/hooks/use-loading';
+import { useCompact } from '@/components/compact-provider';
 import type { ArticleFilter } from '@/types';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface ArticleListProps {
@@ -23,6 +25,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
   const { startLoading, stopLoading } = useLoading();
   const { mutate: globalMutate } = useSWRConfig();
   const [isMarkingRead, setIsMarkingRead] = useState(false);
+  const { isCompact } = useCompact();
   const t = useTranslations();
   
   const handleMarkAllRead = async () => {
@@ -75,7 +78,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
       all: { title: t('empty.noArticles.title'), description: t('empty.noArticles.description') },
       unread: { title: t('empty.noUnread.title'), description: t('empty.noUnread.description') },
       favorites: { title: t('empty.noFavorites.title'), description: t('empty.noFavorites.description') },
-      today: { title: t('empty.noToday.title'), description: t('empty.noToday.description') },
+      today: { title: t('empty.noToday.title'), description: t('empty.noThisWeek.description') },
       week: { title: t('empty.noThisWeek.title'), description: t('empty.noThisWeek.description') },
     };
     
@@ -91,7 +94,10 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
   }
   
   return (
-    <div className="space-y-4">
+    <div className={cn(
+      'space-y-4',
+      isCompact && 'space-y-2'
+    )}>
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {t('article.articles', { count: articles.length })}
@@ -113,7 +119,10 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
         )}
       </div>
       
-      <div className="space-y-3">
+      <div className={cn(
+        'space-y-3',
+        isCompact && 'space-y-1.5'
+      )}>
         {articles.map((article) => (
           <ArticleCard
             key={article.id}

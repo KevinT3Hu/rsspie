@@ -7,6 +7,7 @@ import { LoadingProvider } from "@/hooks/use-loading";
 import { GlobalLoadingBar } from "@/components/layout/global-loading-bar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LanguageProvider } from "@/components/language-provider";
+import { CompactProvider } from "@/components/compact-provider";
 import { initializeApp } from "@/lib/init";
 import "./globals.css";
 
@@ -37,15 +38,17 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <LoadingProvider>
-              <TooltipProvider>
-                <SidebarProvider>
-                  <GlobalLoadingBar />
-                  {children}
-                </SidebarProvider>
-              </TooltipProvider>
-              <Toaster />
-            </LoadingProvider>
+            <CompactProvider>
+              <LoadingProvider>
+                <TooltipProvider>
+                  <SidebarProvider>
+                    <GlobalLoadingBar />
+                    {children}
+                  </SidebarProvider>
+                </TooltipProvider>
+                <Toaster />
+              </LoadingProvider>
+            </CompactProvider>
           </ThemeProvider>
         </LanguageProvider>
       </body>
