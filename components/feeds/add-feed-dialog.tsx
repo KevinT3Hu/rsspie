@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,22 +31,23 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { startLoading, stopLoading } = useLoading();
+  const t = useTranslations();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
     
     setIsLoading(true);
-    startLoading('Adding feed...');
+    startLoading(t('messages.addingFeed'));
     try {
       await addFeed(url, category || undefined);
-      toast.success('Feed added successfully');
+      toast.success(t('messages.feedAdded'));
       setUrl('');
       setCategory('');
       setOpen(false);
       onFeedAdded?.();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to add feed');
+      toast.error(error instanceof Error ? error.message : t('messages.errorAddingFeed'));
     } finally {
       setIsLoading(false);
       stopLoading();
@@ -57,20 +59,20 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Feed
+          {t('nav.addFeed')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add New Feed</DialogTitle>
+            <DialogTitle>{t('feed.addNewFeed')}</DialogTitle>
             <DialogDescription>
-              Enter the URL of the RSS feed you want to subscribe to.
+              {t('feed.addFeedDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="url">Feed URL</Label>
+              <Label htmlFor="url">{t('feed.feedUrl')}</Label>
               <Input
                 id="url"
                 placeholder="https://example.com/feed.xml"
@@ -80,10 +82,10 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="category">Category (optional)</Label>
+              <Label htmlFor="category">{t('feed.categoryOptional')}</Label>
               <Select value={category} onValueChange={setCategory} disabled={isLoading}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category or type new one" />
+                  <SelectValue placeholder={t('feed.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -92,7 +94,7 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
                 </SelectContent>
               </Select>
               <Input
-                placeholder="Or type new category"
+                placeholder={t('feed.typeNewCategory')}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={isLoading}
@@ -103,7 +105,7 @@ export function AddFeedDialog({ onFeedAdded, categories = [] }: AddFeedDialogPro
           <DialogFooter>
             <Button type="submit" disabled={isLoading || !url.trim()}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Add Feed
+              {t('nav.addFeed')}
             </Button>
           </DialogFooter>
         </form>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, ExternalLink, Check, Circle } from 'lucide-react';
 import { useArticle, markAsRead, toggleFavorite, fetchOriginalContent } from '@/hooks/use-articles';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,8 @@ export default function ArticlePage() {
   const articleId = parseInt(params.id as string);
   const { article, prevId, nextId, isLoading, mutate } = useArticle(articleId);
   const [originalContent, setOriginalContent] = useState<string | null>(null);
+  const t = useTranslations();
+  const locale = useLocale();
 
   // Auto-mark as read when article is opened
   useEffect(() => {
@@ -59,8 +62,8 @@ export default function ArticlePage() {
   if (!article) {
     return (
       <div className="max-w-3xl mx-auto text-center py-16">
-        <h1 className="text-2xl font-bold mb-2">Article not found</h1>
-        <p className="text-muted-foreground">The article you&apos;re looking for doesn&apos;t exist.</p>
+        <h1 className="text-2xl font-bold mb-2">{t('empty.articleNotFound.title')}</h1>
+        <p className="text-muted-foreground">{t('empty.articleNotFound.description')}</p>
       </div>
     );
   }
@@ -69,9 +72,9 @@ export default function ArticlePage() {
     try {
       await markAsRead(article.id, !article.isRead);
       mutate();
-      toast.success(article.isRead ? 'Marked as unread' : 'Marked as read');
+      toast.success(article.isRead ? t('article.markAsUnread') : t('article.markAsRead'));
     } catch {
-      toast.error('Failed to update article');
+      toast.error(t('messages.errorMarkingAsRead'));
     }
   };
 
@@ -79,9 +82,9 @@ export default function ArticlePage() {
     try {
       await toggleFavorite(article.id);
       mutate();
-      toast.success(article.isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      toast.success(article.isFavorite ? t('article.removeFromFavorites') : t('article.addToFavorites'));
     } catch {
-      toast.error('Failed to update article');
+      toast.error(t('messages.errorTogglingFavorite'));
     }
   };
 
@@ -93,7 +96,7 @@ export default function ArticlePage() {
       <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          {t('article.back')}
         </Button>
 
         <div className="flex items-center gap-2">
@@ -142,11 +145,11 @@ export default function ArticlePage() {
               </Link>
             )}
             <span>•</span>
-            <time>{formatDate(article.publishedAt)}</time>
+            <time>{formatDate(article.publishedAt, locale)}</time>
             {article.author && (
               <>
                 <span>•</span>
-                <span>By {article.author}</span>
+                <span>{t('article.byAuthor', { author: article.author })}</span>
               </>
             )}
           </div>
@@ -161,7 +164,7 @@ export default function ArticlePage() {
             className="article-content"
           />
         ) : (
-          <p className="text-muted-foreground italic">No content available.</p>
+          <p className="text-muted-foreground italic">{t('article.noContent')}</p>
         )}
       </article>
 
@@ -177,12 +180,12 @@ export default function ArticlePage() {
           {prevId ? (
             <Link href={`/article/${prevId}`}>
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('article.previous')}
             </Link>
           ) : (
             <>
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('article.previous')}
             </>
           )}
         </Button>
@@ -195,12 +198,12 @@ export default function ArticlePage() {
         >
           {nextId ? (
             <Link href={`/article/${nextId}`}>
-              Next
+              {t('article.next')}
               <ChevronRight className="h-4 w-4" />
             </Link>
           ) : (
             <>
-              Next
+              {t('article.next')}
               <ChevronRight className="h-4 w-4" />
             </>
           )}

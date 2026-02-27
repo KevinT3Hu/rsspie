@@ -1,0 +1,141 @@
+{
+  "app": {
+    "title": "RSS Reader",
+    "description": "A modern RSS reader"
+  },
+  "nav": {
+    "allArticles": "All Articles",
+    "today": "Today",
+    "thisWeek": "This Week",
+    "favorites": "Favorites",
+    "feeds": "Feeds",
+    "settings": "Settings",
+    "refresh": "Refresh",
+    "sync": "Sync",
+    "addFeed": "Add Feed"
+  },
+  "article": {
+    "articles": "{count, plural, =0 {articles} =1 {article} other {articles}}",
+    "article": "article",
+    "markAllAsRead": "Mark all as read",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "back": "Back",
+    "previous": "Previous",
+    "next": "Next",
+    "noContent": "No content available.",
+    "byAuthor": "By {author}",
+    "search": "Search articles..."
+  },
+  "feed": {
+    "feedUrl": "Feed URL",
+    "category": "Category",
+    "categoryOptional": "Category (optional)",
+    "selectCategory": "Select a category or type new one",
+    "typeNewCategory": "Or type new category",
+    "addNewFeed": "Add New Feed",
+    "addFeedDescription": "Enter the URL of the RSS feed you want to subscribe to.",
+    "editFeed": "Edit Feed",
+    "editFeedDescription": "Update the feed title and category.",
+    "deleteFeed": "Delete",
+    "removeFeed": "Remove",
+    "refreshFeed": "Refresh",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "unsubscribed": "unsubscribed",
+    "uncategorized": "Uncategorized",
+    "loadingFeeds": "Loading feeds..."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "appearanceDescription": "Customize how the app looks.",
+    "compactView": "Compact view",
+    "dataManagement": "Data Management",
+    "dataManagementDescription": "Manage your feeds and articles.",
+    "clearOldArticles": "Clear old articles",
+    "clearOldArticlesDescription": "Remove articles older than 30 days (favorites are preserved)",
+    "clear": "Clear",
+    "exportOpml": "Export OPML",
+    "exportOpmlDescription": "Export your feeds as an OPML file",
+    "export": "Export",
+    "about": "About",
+    "version": "RSS Reader v1.0.0",
+    "feedsSubscribed": "{count} feeds subscribed"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "toggle": "Toggle language",
+    "english": "English",
+    "chinese": "中文"
+  },
+  "messages": {
+    "feedAdded": "Feed added successfully",
+    "feedUpdated": "Feed updated",
+    "feedDeleted": "Feed deleted",
+    "articleMarkedAsRead": "Marked {count} articles as read",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "oldArticlesCleared": "Old articles cleared",
+    "refreshedFeeds": "Refreshed {success} of {total} feeds",
+    "syncedNewArticles": "Synced {count} new articles",
+    "errorAddingFeed": "Failed to add feed",
+    "errorUpdatingFeed": "Failed to update feed",
+    "errorDeletingFeed": "Failed to delete feed",
+    "errorRefreshingFeed": "Failed to refresh feed",
+    "errorMarkingAsRead": "Failed to mark articles as read",
+    "errorTogglingFavorite": "Failed to toggle favorite",
+    "errorClearingOld": "Failed to clear old articles",
+    "errorLoadingArticles": "Error loading articles",
+    "confirmDeleteFeed": "Are you sure you want to delete \"{title}\"?",
+    "syncingFeed": "Syncing \"{title}\"...",
+    "addingFeed": "Adding feed...",
+    "updatingFeed": "Updating feed...",
+    "deletingFeed": "Deleting feed...",
+    "markingAsRead": "Marking articles as read...",
+    "updatingFavorite": "Updating favorite...",
+    "syncingAllFeeds": "Syncing all feeds..."
+  },
+  "empty": {
+    "noArticles": {
+      "title": "No articles",
+      "description": "Subscribe to feeds to see articles here."
+    },
+    "noUnread": {
+      "title": "No unread articles",
+      "description": "You're all caught up!"
+    },
+    "noFavorites": {
+      "title": "No favorites",
+      "description": "Star articles to save them here."
+    },
+    "noToday": {
+      "title": "No articles today",
+      "description": "Check back later for new articles."
+    },
+    "noThisWeek": {
+      "title": "No articles this week",
+      "description": "Check back later for new articles."
+    },
+    "articleNotFound": {
+      "title": "Article not found",
+      "description": "The article you're looking for doesn't exist."
+    },
+    "errorLoading": {
+      "title": "Error loading articles",
+      "description": "There was an error loading the articles. Please try again."
+    }
+  },
+  "filter": {
+    "all": "All",
+    "unread": "Unread"
+  }
+}

@@ -6,6 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { LoadingProvider } from "@/hooks/use-loading";
 import { GlobalLoadingBar } from "@/components/layout/global-loading-bar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/components/language-provider";
 import { initializeApp } from "@/lib/init";
 import "./globals.css";
 
@@ -29,22 +30,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LoadingProvider>
-            <TooltipProvider>
-              <SidebarProvider>
-                <GlobalLoadingBar />
-                {children}
-              </SidebarProvider>
-            </TooltipProvider>
-            <Toaster />
-          </LoadingProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <LoadingProvider>
+              <TooltipProvider>
+                <SidebarProvider>
+                  <GlobalLoadingBar />
+                  {children}
+                </SidebarProvider>
+              </TooltipProvider>
+              <Toaster />
+            </LoadingProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

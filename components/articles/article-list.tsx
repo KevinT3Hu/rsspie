@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSWRConfig } from 'swr';
+import { useTranslations } from 'next-intl';
 import { Inbox, Check, Star, Loader2 } from 'lucide-react';
 import { ArticleCard } from './article-card';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -22,18 +23,19 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
   const { startLoading, stopLoading } = useLoading();
   const { mutate: globalMutate } = useSWRConfig();
   const [isMarkingRead, setIsMarkingRead] = useState(false);
+  const t = useTranslations();
   
   const handleMarkAllRead = async () => {
     setIsMarkingRead(true);
-    startLoading('Marking articles as read...');
+    startLoading(t('messages.markingAsRead'));
     try {
       const result = await markAllAsRead(feedId);
-      toast.success(`Marked ${result.count} articles as read`);
+      toast.success(t('messages.articleMarkedAsRead', { count: result.count }));
       mutate();
       // Revalidate feeds to update unread counts in sidebar
       globalMutate('/api/feeds');
     } catch {
-      toast.error('Failed to mark articles as read');
+      toast.error(t('messages.errorMarkingAsRead'));
     } finally {
       setIsMarkingRead(false);
       stopLoading();
@@ -41,12 +43,12 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
   };
   
   const handleToggleFavorite = async (id: number) => {
-    startLoading('Updating favorite...');
+    startLoading(t('messages.updatingFavorite'));
     try {
       await toggleFavorite(id);
       mutate();
     } catch {
-      toast.error('Failed to toggle favorite');
+      toast.error(t('messages.errorTogglingFavorite'));
     } finally {
       stopLoading();
     }
@@ -62,19 +64,19 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
     return (
       <EmptyState
         icon={Inbox}
-        title="Error loading articles"
-        description="There was an error loading the articles. Please try again."
+        title={t('empty.errorLoading.title')}
+        description={t('empty.errorLoading.description')}
       />
     );
   }
   
   if (articles.length === 0) {
     const emptyMessages: Record<string, { title: string; description: string }> = {
-      all: { title: 'No articles', description: 'Subscribe to feeds to see articles here.' },
-      unread: { title: 'No unread articles', description: 'You\'re all caught up!' },
-      favorites: { title: 'No favorites', description: 'Star articles to save them here.' },
-      today: { title: 'No articles today', description: 'Check back later for new articles.' },
-      week: { title: 'No articles this week', description: 'Check back later for new articles.' },
+      all: { title: t('empty.noArticles.title'), description: t('empty.noArticles.description') },
+      unread: { title: t('empty.noUnread.title'), description: t('empty.noUnread.description') },
+      favorites: { title: t('empty.noFavorites.title'), description: t('empty.noFavorites.description') },
+      today: { title: t('empty.noToday.title'), description: t('empty.noToday.description') },
+      week: { title: t('empty.noThisWeek.title'), description: t('empty.noThisWeek.description') },
     };
     
     const message = emptyMessages[filter || 'all'];
@@ -92,7 +94,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {articles.length} {articles.length === 1 ? 'article' : 'articles'}
+          {t('article.articles', { count: articles.length })}
         </p>
         {hasUnread && (
           <Button
@@ -106,7 +108,7 @@ export function ArticleList({ feedId, filter }: ArticleListProps) {
             ) : (
               <Check className="mr-2 h-4 w-4" />
             )}
-            Mark all as read
+            {t('article.markAllAsRead')}
           </Button>
         )}
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { ArticleList } from '@/components/articles/article-list';
 import { useFeed } from '@/hooks/use-feeds';
 import { FeedActions } from '@/components/feeds/feed-actions';
@@ -8,26 +9,28 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Rss, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow, formatDate } from '@/lib/utils';
 
-function formatDistanceToFuture(timestamp: number): string {
+function formatDistanceToFuture(timestamp: number, t: ReturnType<typeof useTranslations>, locale: string): string {
   const now = Date.now();
   const diff = timestamp - now;
   
-  if (diff <= 0) return 'now';
+  if (diff <= 0) return t('nav.today').toLowerCase();
   
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
   
-  if (minutes < 60) return `in ${minutes}m`;
-  if (hours < 24) return `in ${hours}h`;
-  return `in ${days}d`;
+  if (minutes < 60) return `${minutes}m`;
+  if (hours < 24) return `${hours}h`;
+  return `${days}d`;
 }
 
 export default function FeedPage() {
   const params = useParams();
   const feedId = parseInt(params.id as string);
   const { feed, isLoading } = useFeed(feedId);
+  const t = useTranslations();
+  const locale = useLocale();
   
   if (isLoading) {
     return (
@@ -41,19 +44,19 @@ export default function FeedPage() {
   if (!feed) {
     return (
       <div className="max-w-4xl mx-auto text-center py-16">
-        <h1 className="text-2xl font-bold mb-2">Feed not found</h1>
-        <p className="text-muted-foreground">The feed you\'re looking for doesn\'t exist.</p>
+        <h1 className="text-2xl font-bold mb-2">{t('empty.articleNotFound.title')}</h1>
+        <p className="text-muted-foreground">{t('empty.articleNotFound.description')}</p>
       </div>
     );
   }
   
   // Format sync times
   const lastSyncText = feed.lastFetchedAt 
-    ? formatDistanceToNow(feed.lastFetchedAt * 1000)
+    ? formatDistanceToNow(feed.lastFetchedAt * 1000, locale)
     : 'Never';
   
   const nextSyncText = feed.nextSyncAt 
-    ? formatDistanceToFuture(feed.nextSyncAt)
+    ? formatDistanceToFuture(feed.nextSyncAt, t, locale)
     : 'Not scheduled';
   
   const hasError = !!feed.fetchError;
@@ -84,13 +87,13 @@ export default function FeedPage() {
                   <Clock className="h-3.5 w-3.5" />
                 )}
                 <span>
-                  Last sync: <span className={hasError ? 'text-destructive' : ''}>{lastSyncText}</span>
+                  {feed.lastFetchedAt ? `${lastSyncText}` : ''}
                 </span>
               </div>
               {feed.isActive && (
                 <div className="flex items-center gap-1.5" title={feed.nextSyncAt ? new Date(feed.nextSyncAt).toLocaleString() : 'Not scheduled'}>
                   <Clock className="h-3.5 w-3.5" />
-                  <span>Next sync: {nextSyncText}</span>
+                  <span>{nextSyncText}</span>
                 </div>
               )}
             </div>

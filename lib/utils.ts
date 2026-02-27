@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatDistanceToNow(timestamp: number): string {
+export function formatDistanceToNow(timestamp: number, locale: string = 'en'): string {
   const now = Date.now();
   const diff = now - timestamp;
   
@@ -17,17 +17,19 @@ export function formatDistanceToNow(timestamp: number): string {
   const months = Math.floor(days / 30);
   const years = Math.floor(days / 365);
   
-  if (seconds < 60) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  if (weeks < 4) return `${weeks}w ago`;
-  if (months < 12) return `${months}mo ago`;
-  return `${years}y ago`;
+  const isZh = locale === 'zh';
+  
+  if (seconds < 60) return isZh ? '刚刚' : 'just now';
+  if (minutes < 60) return isZh ? `${minutes}分钟前` : `${minutes}m ago`;
+  if (hours < 24) return isZh ? `${hours}小时前` : `${hours}h ago`;
+  if (days < 7) return isZh ? `${days}天前` : `${days}d ago`;
+  if (weeks < 4) return isZh ? `${weeks}周前` : `${weeks}w ago`;
+  if (months < 12) return isZh ? `${months}个月前` : `${months}mo ago`;
+  return isZh ? `${years}年前` : `${years}y ago`;
 }
 
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+export function formatDate(timestamp: number, locale: string = 'en'): string {
+  return new Date(timestamp * 1000).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

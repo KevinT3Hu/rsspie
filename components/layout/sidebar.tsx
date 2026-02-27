@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { 
   Rss, 
   Inbox, 
@@ -25,13 +26,14 @@ import { toast } from 'sonner';
 
 interface NavItem {
   icon: React.ReactNode;
-  label: string;
+  labelKey: string;
   href: string;
   count?: number;
 }
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations();
   const { feeds, isLoading, mutate } = useFeeds();
   const { startLoading, stopLoading } = useLoading();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -40,21 +42,21 @@ export function Sidebar() {
   const unreadCount = feeds.reduce((sum, f) => sum + (f.unreadCount || 0), 0);
   
   const navItems: NavItem[] = [
-    { icon: <Inbox className="h-4 w-4" />, label: 'All Articles', href: '/', count: unreadCount },
-    { icon: <Clock className="h-4 w-4" />, label: 'Today', href: '/?filter=today' },
-    { icon: <Calendar className="h-4 w-4" />, label: 'This Week', href: '/?filter=week' },
-    { icon: <Star className="h-4 w-4" />, label: 'Favorites', href: '/?filter=favorites' },
+    { icon: <Inbox className="h-4 w-4" />, labelKey: 'allArticles', href: '/', count: unreadCount },
+    { icon: <Clock className="h-4 w-4" />, labelKey: 'today', href: '/?filter=today' },
+    { icon: <Calendar className="h-4 w-4" />, labelKey: 'thisWeek', href: '/?filter=week' },
+    { icon: <Star className="h-4 w-4" />, labelKey: 'favorites', href: '/?filter=favorites' },
   ];
   
   const handleRefreshAll = async () => {
     setIsRefreshing(true);
-    startLoading('Syncing all feeds...');
+    startLoading(t('messages.syncingAllFeeds'));
     try {
       const result = await refreshAllFeeds();
-      toast.success(`Refreshed ${result.successCount} of ${result.total} feeds`);
+      toast.success(t('messages.refreshedFeeds', { success: result.successCount, total: result.total }));
       mutate();
     } catch (error) {
-      toast.error('Failed to refresh feeds');
+      toast.error(t('messages.errorRefreshingFeed'));
     } finally {
       setIsRefreshing(false);
       stopLoading();
@@ -62,7 +64,7 @@ export function Sidebar() {
   };
   
   const feedsByCategory = feeds.reduce((acc, feed) => {
-    const cat = feed.category || 'Uncategorized';
+    const cat = feed.category || t('feed.uncategorized');
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(feed);
     return acc;
@@ -73,7 +75,7 @@ export function Sidebar() {
       <SidebarHeader data-testid="sidebar" className="border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <Rss className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-lg">RSS Reader</span>
+          <span className="font-semibold text-lg">{t('app.title')}</span>
         </div>
       </SidebarHeader>
       
@@ -93,7 +95,7 @@ export function Sidebar() {
                   )}
                 >
                   {item.icon}
-                  <span className="flex-1">{item.label}</span>
+                  <span className="flex-1">{t(`nav.${item.labelKey}`)}</span>
                   {item.count !== undefined && item.count > 0 && (
                     <span className="text-xs text-muted-foreground">{item.count}</span>
                   )}
@@ -105,7 +107,7 @@ export function Sidebar() {
           <div className="px-3 py-2">
             <div className="flex items-center justify-between px-3 py-2">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Feeds
+                {t('nav.feeds')}
               </span>
               <Button
                 variant="ghost"
@@ -119,7 +121,7 @@ export function Sidebar() {
             </div>
             
             {isLoading ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">Loading feeds...</div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">{t('feed.loadingFeeds')}</div>
             ) : (
               <div className="space-y-1">
                 {Object.entries(feedsByCategory).map(([category, categoryFeeds]) => (
@@ -143,7 +145,7 @@ export function Sidebar() {
         <Link href="/settings">
           <Button variant="ghost" className="w-full justify-start gap-2">
             <Settings className="h-4 w-4" />
-            Settings
+            {t('nav.settings')}
           </Button>
         </Link>
       </SidebarFooter>

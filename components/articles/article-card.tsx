@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
 import { Star, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +15,9 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article, onToggleFavorite }: ArticleCardProps) {
+  const t = useTranslations();
+  const locale = useLocale();
+  
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -42,7 +46,7 @@ export function ArticleCard({ article, onToggleFavorite }: ArticleCardProps) {
                 </span>
                 <span className="text-xs text-muted-foreground">•</span>
                 <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(article.publishedAt * 1000)}
+                  {formatDistanceToNow(article.publishedAt * 1000, locale)}
                 </span>
               </div>
               
@@ -64,7 +68,7 @@ export function ArticleCard({ article, onToggleFavorite }: ArticleCardProps) {
               
               {article.author && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  By {article.author}
+                  {t('article.byAuthor', { author: article.author })}
                 </p>
               )}
             </div>

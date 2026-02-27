@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSWRConfig } from 'swr';
+import { useTranslations } from 'next-intl';
 import { Rss, Edit, Trash2, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLoading } from '@/hooks/use-loading';
@@ -38,6 +39,7 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
   const pathname = usePathname();
   const { mutate: globalMutate } = useSWRConfig();
   const { startLoading, stopLoading } = useLoading();
+  const t = useTranslations();
   const isActive = pathname === `/feed/${feed.id}`;
   
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,14 +52,14 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    startLoading(`Syncing "${feed.title}"...`);
+    startLoading(t('messages.syncingFeed', { title: feed.title }));
     try {
       const result = await refreshFeed(feed.id);
       // Revalidate articles for this feed
       globalMutate((key) => typeof key === 'string' && key.startsWith('/api/articles'));
       onUpdate?.();
     } catch (error) {
-      toast.error('Failed to refresh feed');
+      toast.error(t('messages.errorRefreshingFeed'));
     } finally {
       setIsRefreshing(false);
       stopLoading();
@@ -72,17 +74,17 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
 
   const handleSaveEdit = async () => {
     setIsSaving(true);
-    startLoading('Updating feed...');
+    startLoading(t('messages.updatingFeed'));
     try {
       await updateFeed(feed.id, {
         title: editTitle,
         category: editCategory,
       });
-      toast.success('Feed updated');
+      toast.success(t('messages.feedUpdated'));
       setIsEditOpen(false);
       onUpdate?.();
     } catch (error) {
-      toast.error('Failed to update feed');
+      toast.error(t('messages.errorUpdatingFeed'));
     } finally {
       setIsSaving(false);
       stopLoading();
@@ -90,16 +92,16 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${feed.title}"?`)) return;
+    if (!confirm(t('messages.confirmDeleteFeed', { title: feed.title }))) return;
     
     setIsDeleting(true);
-    startLoading('Deleting feed...');
+    startLoading(t('messages.deletingFeed'));
     try {
       await deleteFeed(feed.id);
-      toast.success('Feed deleted');
+      toast.success(t('messages.feedDeleted'));
       onUpdate?.();
     } catch (error) {
-      toast.error('Failed to delete feed');
+      toast.error(t('messages.errorDeletingFeed'));
       setIsDeleting(false);
     } finally {
       stopLoading();
@@ -150,16 +152,16 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
         <ContextMenuContent>
           <ContextMenuItem onClick={handleRefresh} disabled={isRefreshing}>
             <RefreshCw className={cn('mr-2 h-4 w-4', isRefreshing && 'animate-spin')} />
-            Sync
+            {t('nav.sync')}
           </ContextMenuItem>
           <ContextMenuItem onClick={handleEdit}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit
+            {t('feed.edit')}
           </ContextMenuItem>
           <ContextMenuSeparator />
           <ContextMenuItem onClick={handleDelete} disabled={isDeleting} variant="destructive">
             <Trash2 className="mr-2 h-4 w-4" />
-            Remove
+            {t('feed.removeFeed')}
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
@@ -168,14 +170,14 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Feed</DialogTitle>
+            <DialogTitle>{t('feed.editFeed')}</DialogTitle>
             <DialogDescription>
-              Update the feed title and category.
+              {t('feed.editFeedDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-title">Title</Label>
+              <Label htmlFor="edit-title">{t('feed.category')}</Label>
               <Input
                 id="edit-title"
                 value={editTitle}
@@ -184,7 +186,7 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-category">Category</Label>
+              <Label htmlFor="edit-category">{t('feed.category')}</Label>
               <Input
                 id="edit-category"
                 value={editCategory}
@@ -195,11 +197,11 @@ export function FeedListItem({ feed, onUpdate }: FeedListItemProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)} disabled={isSaving}>
-              Cancel
+              {t('feed.cancel')}
             </Button>
             <Button onClick={handleSaveEdit} disabled={isSaving || !editTitle.trim()}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save
+              {t('feed.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
