@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowLeft, ChevronLeft, ChevronRight, Star, ExternalLink, Check, Circle } from 'lucide-react';
 import { useArticle, markAsRead, toggleFavorite, fetchOriginalContent } from '@/hooks/use-articles';
 import { Button } from '@/components/ui/button';
@@ -137,7 +136,7 @@ export default function ArticlePage() {
             {article.feed && (
               <Link href={`/feed/${article.feedId}`} className="flex items-center gap-2 hover:underline">
                 {article.feed.favicon && (
-                  <Image src={article.feed.favicon} alt="" width={16} height={16} className="h-4 w-4 rounded" />
+                  <img src={article.feed.favicon} alt="" width={16} height={16} className="h-4 w-4 rounded" />
                 )}
                 {article.feed.title}
               </Link>
